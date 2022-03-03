@@ -1,0 +1,2 @@
+market,time,coin_metrics_id,amount,price,database_time,side
+coinbase-btc-usd-spot,2022-03-03T18:55:39.718188000Z,290727837,0.048544,42320.19,2022-03-03T18:55:39.821941000Z,sell
