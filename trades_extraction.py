@@ -1,4 +1,5 @@
 import csv
+from distutils.log import error
 import requests
 import json
 from dateutil import parser
@@ -13,11 +14,8 @@ data = response.text
 parse_data = json.loads(data)
 object_key = parse_data.get("data")
 
-#take object key iterate over and extract each
 
-# setup trades_by_timeslot
-
-trades_by_timeslot = {
+trades_by_timeslot = { # trades by hour from 0-23 will be appended to trades_by_timeslot lists
     0: [],
     1: [],
     2: [],
@@ -44,44 +42,30 @@ trades_by_timeslot = {
     23: []
 }
 
-
-
-def collect_trades(trades):
-
-    # print(request_data)
-    # next_page = trades.get("next_page_url")
-    # print(next_page)
-    
-        
-            
-    for trade in trades: #looping through list of dictionaries
+def collect_trades(trades):         
+    for trade in trades: 
+        #looping through list of dictionaries
         #for each next page url get data list
-        # print(trade["database_time"])
 
-        convert_datetime = parser.isoparse(trade["time"]) #parsing iso816 time so python can read it
-        # print(convert_datetime)
-        # print(trade)
-
-
-
-
-
-        if convert_datetime.hour in trades_by_timeslot: #checking if the hour is equal to one of the timeslots in list
-            # print('true') 
-            date = convert_datetime.strftime("%Y-%m-%d") #changing the timezone format to just the date without time
-            # I am doing this so I can name the file after the hour for readability 
+        convert_datetime = parser.isoparse(trade["time"]) 
+        #parsing iso816 time so python can read it
+    
+        if convert_datetime.hour in trades_by_timeslot: 
+            #checking if the hour is equal to one of the timeslots in list
             
-                
-            # if item is not in key's list
-            if trade not in trades_by_timeslot[convert_datetime.hour]: #linear time complexity nested if statement O(m+n) = O(n)
-                # above we are preventing duplicates              
-                found_home = trades_by_timeslot[convert_datetime.hour].append(trade)
-                # next_page_trades = trades_by_timeslot[convert_datetime.hour].extend(next_pages["data"])
+            date = convert_datetime.strftime("%Y-%m-%d") 
+            #changing the timezone format to just the date without time
+            # I am doing this so I can name the file after the hour for readability 
 
+            if trade not in trades_by_timeslot[convert_datetime.hour]: 
+                # if item is not in key's list 
+                # above we are preventing duplicates         
+                      
+                found_home = trades_by_timeslot[convert_datetime.hour].append(trade)
                 #above we are appending new trades to one of the specified lists in trades_by_timeslot dictionary
 
-
             with open(str(date) + ":" + str(convert_datetime.hour) + ".csv", "w", newline="") as create_file:
+                #writes csv file
                 field_headers = ["market", "time", "coin_metrics_id", "amount", "price", "database_time", "side"]
                 writer = csv.DictWriter(create_file,
                                 fieldnames = field_headers,
@@ -89,37 +73,23 @@ def collect_trades(trades):
                 writer.writeheader()
                 create_file.close()
 
-
-
-
-
                 for key in trades_by_timeslot[convert_datetime.hour]:
                     key = [key["market"], key["time"], key["coin_metrics_id"], key["amount"], key["price"], key["database_time"], key["side"]]
                     
-
-
-
                     def append_to_file(file_name, list_of_trades):
+                        #appends to csv file
                         with open(str(file_name), "a", newline="") as trade_file:
                             append_trades = csv.writer(trade_file)
                             append_trades.writerow(list_of_trades)
                             
-                        
-
                     append_to_file(str(date) + ":" + str(convert_datetime.hour) + ".csv", key)
 
-
-                        
-
-
         else:
-            print("can't generate file because this list's time stamp is not in time loop")
+            error("Error please check line 53 and below")
 
-collect_trades = collect_trades(object_key)
+collect_trades = collect_trades(object_key)  #here we are using variable which contains vaiable to the list od dictionaries
 print(collect_trades)
         
-
-print(trades_by_timeslot)
 
 
 # ************************
